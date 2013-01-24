@@ -1,15 +1,14 @@
 function Player() {
     this.name               = 'Player' + game.numberOfPlayers();
     this.color              = game.newColor(100);
+    this.team               = 0;
 
     this.units              = [];
-    this.maxUnits           = 50;
+    this.maxUnits           = 2;
     this.structures         = [];
 
     this.spawnX             = 0;
     this.spawnY             = 0;
-    
-    this.isComputredControlled = true;
 
     this.newStructure = function(x, y) {
         var structure = new Structure(this);
@@ -28,7 +27,7 @@ function Player() {
 
     this.newUnit = function(x, y) {
         var unit = new Unit(this);
-        
+
         unit.x   = x;
         unit.y   = y;
 
@@ -75,13 +74,27 @@ function Player() {
         }
     };
 
+    this.findEnemyPlayerItems = function() {
+        var items = [];
+
+        game.doForEveryEnemyPlayer(this, function(player) {
+            for(var key in player.units) {
+                items.push(player.units[key]);
+            }
+            for(var key in player.structures) {
+                items.push(player.structures[key]);
+            }
+        });
+
+        return items;
+    };
+
     this.killUnit = function(key) {
         var unitExists = this.units[key] !== undefined;
 
         if(unitExists) {
             delete this.units[key];
 
-            game.events.remove(key + '.attacking');
             game.animations.remove(key);
             game.collisions.remove(key);
         }
@@ -93,7 +106,6 @@ function Player() {
         if(structureExists) {
             delete this.structures[key];
 
-            game.events.remove(key + '.attacking');
             game.animations.remove(key);
             game.collisions.remove(key);
         }
@@ -109,17 +121,37 @@ function Player() {
     };
 }
 
+Player.prototype = new Ai();
+
 function Ai() {
-    this.inProximityOfEnemy = function() {
-        
+    this.isComputerControlled = false;
+
+    this.inProximityOfEnemy = function(unit) {
+        var unitProximity   = {
+            'x': unit.x - unit.lineOfSight / 2,
+            'y': unit.y - unit.lineOfSight / 2,
+            'width': unit.width + unit.lineOfSight,
+            'height': unit.height + unit.lineOfSight
+        };
+
+        game.doForEveryEnemyPlayer(this, function(player) {
+            var enemyUnits = player.units;
+
+            for(var key in enemyUnits) {
+                var enemyUnit   = enemyUnits[key];
+                var inProximity = game.collisions.isColliding(unitProximity, enemyUnit);
+
+                if(inProximity) {
+                    var isColliding = game.collisions.isColliding(unit, enemyUnit);
+
+                    isColliding === true && unit.attack(key, enemyUnit);
+                    isColliding === false && unit.move(key, unit, enemyUnit);
+
+                    break;
+                }
+            }
+
+        });
     };
-//
-//    this.aiStart = function() {
-//
-//    };
-//
-//    this.aiMovement = function() {
-//
-//    };
 }
 

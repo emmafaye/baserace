@@ -92,11 +92,16 @@ function Mouse() {
     };
 
     this.rightClick = function(items, onClicked) {
+        var item;
+        var isColliding;
         for(var key in items) {
-            var item = items[key];
+            item = items[key];
+            isColliding = game.collisions.isColliding(this, item)
 
-            game.collisions.isColliding(this, item) && onClicked(item);
+            if(isColliding) { break; } else { item = false; }
         }
+
+        onClicked(item, isColliding);
     };
 }
 
@@ -144,13 +149,13 @@ function MouseSelection() {
     };
 
     this.draw = function() {
-        var controls = game.controls;
+        var selection = game.controls.mouse.selection;
 
-        game.foregorund.context.fillStyle   = 'rgba(0, 0, 0, 0.0)';
-        game.foregorund.context.strokeStyle = this.color;
-        game.foregorund.context.lineWidth   = this.lineWidth;
+        game.foreground.context.fillStyle   = 'rgba(0, 0, 0, 0.0)';
+        game.foreground.context.strokeStyle = this.color;
+        game.foreground.context.lineWidth   = this.lineWidth;
 
-        game.foregorund.context.strokeRect(controls.mouse.selection.x, controls.mouse.selection.y, controls.mouse.selection.width, controls.mouse.selection.height);
+        game.foreground.context.strokeRect(selection.x, selection.y, selection.width, selection.height);
     };
 
     this.render = function() {};

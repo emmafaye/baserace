@@ -2,7 +2,11 @@ function Animations() {
     this.queue      = {};
     this.state      = {};
 
-    this.state.idle = function() {};
+    this.state.idle = function(key, queue) {
+        var item   = queue.item;
+        
+        item.idle();
+    };
 
     this.state.move = function(key, queue) {
         var item   = queue.item;
@@ -12,9 +16,9 @@ function Animations() {
     };
 
     this.state.attack = function(key, queue) {
-        var item   = queue.item;
-        var target = queue.target;
-        var isColliding = game.collisions.isColliding(queue.item, queue.target);
+        var item        = queue.item;
+        var target      = queue.target;
+        var isColliding = game.collisions.isColliding(item, target);
 
         if(isColliding) {
 //            game.events.new(item.name + '.attacking', 1, true, function() {

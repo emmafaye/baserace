@@ -16,8 +16,8 @@ function Performance() {
 
             this.lastUpdate = this.currentTime;
 
-            game.context.fillStyle = '#FFF';
-            game.context.fillText(this.fps.toFixed(1) + " FPS", 5, 10);
+            game.foreground.context.fillStyle = '#FFF';
+            game.foreground.context.fillText(this.fps.toFixed(1) + " FPS", 5, 10);
         }
 
         return this.fps;

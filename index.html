@@ -5,9 +5,17 @@
         body {
             margin:0;padding:0;
         }
-        canvas {
+        #foreground {
+            z-index:2;
+        }
+        #background {
+            z-index:1;
             background: #194d11;
         }
+        #foreground, #background {
+            position:absolute;
+        }
+
     </style>
     <body>
         <div id="fps"></div>
@@ -22,6 +30,7 @@
     <script type="text/javascript" src="guppyjs/animations.js"></script>
     <script type="text/javascript" src="guppyjs/controls.js"></script>
     <script type="text/javascript" src="guppyjs/events.js"></script>
+    <script type="text/javascript" src="guppyjs/particles.js"></script>
     <script type="text/javascript" src="guppyjs/performance.js"></script>
     <script type="text/javascript" src="javascript.js"></script>
 </html>

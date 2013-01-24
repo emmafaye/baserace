@@ -27,7 +27,7 @@ function Events() {
                 event.functionToExecute();
 
                 event.repeat && (event.time = this.time);
-                event.repeat === false &&  delete this.queue[key];
+                event.repeat === false && this.remove(key);
             }
         }
     };
