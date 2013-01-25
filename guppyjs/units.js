@@ -2,7 +2,7 @@ function Unit(player) {
     this.player         = player;
 
     // Unit Properties
-    this.name           = this.player.name + 'Unit' + this.player.numberOfUnits();
+    this.name           = this.player.name + 'Unit' + this.player.getUniqueId();
     this.color          = this.player.color;
     this.health         = 70;
     this.maxHealth      = 70;
@@ -31,8 +31,8 @@ function Unit(player) {
         if(item.health < 0) {
             game.events.remove(this.name + '.attacking');
 
-            item.perish();
             animations.changeState(key, animations.state.idle);
+            item.perish();
         }
     };
 

@@ -4,7 +4,7 @@ function Animations() {
 
     this.state.idle = function(key, queue) {
         var item   = queue.item;
-        
+
         item.idle();
     };
 
@@ -24,6 +24,17 @@ function Animations() {
 //            game.events.new(item.name + '.attacking', 1, true, function() {
                 item.attack(key, target);
 //            });
+
+            game.particles.new(0.2, game.foreground, game.particles.drawCircle, {
+                'x': target.x,
+                'y': target.y,
+                'width': 10,
+                'height': 10,
+                'color': 'rgba(255, 50, 50, 0.5)',
+                'lineColor': 'rgba(0, 0, 0, 0)',
+                'lineWidth': 0,
+                'center': true
+            });
         } else {
             item.move(key, item, target);
         }

@@ -11,6 +11,7 @@ function Events() {
             'repeat': repeat,
             'functionToExecute': functionToExecute
         };
+        console.log(this.queue);
     };
 
     this.remove = function(key) {
@@ -19,7 +20,6 @@ function Events() {
 
     this.process = function() {
         this.time = new Date().getTime();
-
         for(var key in this.queue) {
             var event = this.queue[key];
 

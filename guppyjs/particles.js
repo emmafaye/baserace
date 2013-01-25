@@ -1,14 +1,19 @@
 function Particles() {
     this.queue  = [];
+    this.uid    = 0;
 
     this.new = function(lifeSpan, layer, typeToDraw, style) {
-        var name         = 'Particle' + this.numberOfParticles();
+        var name         = 'Particle' + this.getUniqueId();
         this.queue[name] = {
             'lifeSpan': lifeSpan,
             'layer': layer,
             'typeToDraw': typeToDraw,
             'style': style
         };
+
+        game.events.new(name, lifeSpan, false, function() {
+            game.particles.remove(name);
+        });
     };
 
     this.remove = function(key) {
@@ -16,28 +21,27 @@ function Particles() {
     };
 
     this.process = function() {
-
         for(var key in this.queue) {
             var particle = this.queue[key];
 
             particle.typeToDraw(particle.layer, particle.style);
-
-            game.events.new(particle.name, particle.lifeSpan, false, function() {
-                game.particles.remove(key);
-            });
         }
     };
 
     this.drawRectangle = function(layer, style) {
+        var x = style.center ? style.x - style.width / 2 : style.x;
+        var y = style.center ? style.y - style.height / 2 : style.y;
+
         layer.context.fillStyle   = style.color;
         layer.context.strokeStyle = style.lineColor;
         layer.context.lineWidth   = style.lineWidth;
 
-        layer.context.strokeRect(style.x, style.y, style.width, style.height);
+        layer.context.strokeRect(x, y, style.width, style.height);
+        layer.context.fillRect(x, y, style.width, style.height);
     };
 
     this.drawCircle = function(layer, style) {
-        var radius = style.width * 2;
+        var radius = style.width;
 
         layer.context.fillStyle = style.color;
 
@@ -47,7 +51,7 @@ function Particles() {
         layer.context.fill();
     };
 
-    this.numberOfParticles = function() {
-        return Object.keys(this.queue).length;
+    this.getUniqueId = function() {
+        return this.uid++;
     };
 }

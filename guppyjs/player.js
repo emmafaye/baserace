@@ -4,11 +4,13 @@ function Player() {
     this.team               = 0;
 
     this.units              = [];
-    this.maxUnits           = 2;
+    this.maxUnits           = 50;
     this.structures         = [];
 
     this.spawnX             = 0;
     this.spawnY             = 0;
+    
+    this.uid                = 0;
 
     this.newStructure = function(x, y) {
         var structure = new Structure(this);
@@ -46,6 +48,29 @@ function Player() {
 
         return unit;
     };
+    
+    this.killUnit = function(key) {
+        var unitExists = this.units[key] !== undefined;
+
+        if(unitExists) {
+            delete this.units[key];
+
+            game.animations.remove(key);
+            game.collisions.remove(key);
+        }
+    };
+
+    this.killStructure = function(key) {
+        var structureExists = this.structures[key] !== undefined;
+
+        if(structureExists) {
+            delete this.structures[key];
+
+            game.animations.remove(key);
+            game.collisions.remove(key);
+        }
+
+    };
 
     this.deselectAllUnits = function() {
         for(var key in this.units) {
@@ -57,8 +82,8 @@ function Player() {
         for(var key in this.units) {
             var unit = this.units[key];
             var target = {
-                'x': x,
-                'y': y
+                'x': x - unit.width / 2,
+                'y': y - unit.height / 2
             };
 
             unit.selected && game.animations.new(unit, target, game.animations.state.move);
@@ -89,35 +114,20 @@ function Player() {
         return items;
     };
 
-    this.killUnit = function(key) {
-        var unitExists = this.units[key] !== undefined;
-
-        if(unitExists) {
-            delete this.units[key];
-
-            game.animations.remove(key);
-            game.collisions.remove(key);
-        }
-    };
-
-    this.killStructure = function(key) {
-        var structureExists = this.structures[key] !== undefined;
-
-        if(structureExists) {
-            delete this.structures[key];
-
-            game.animations.remove(key);
-            game.collisions.remove(key);
-        }
-
-    };
-
     this.numberOfUnits = function() {
         return Object.keys(this.units).length;
     };
 
     this.numberOfStructures = function() {
         return Object.keys(this.structures).length;
+    };
+
+    this.getNumberOfItems = function(items) {
+        return Object.keys(items).length;
+    };
+
+    this.getUniqueId = function() {
+        return this.uid++;
     };
 }
 

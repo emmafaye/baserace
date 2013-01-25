@@ -89,6 +89,7 @@ function Mouse() {
         // TODO: Figure out a good way to pull this out of this generic function.
         // Deselect all units for the current player.
         clickedItems < 1 && game.currentPlayer.deselectAllUnits();
+        this.drag && this.selection.check(game.currentPlayer.units);
     };
 
     this.rightClick = function(items, onClicked) {

@@ -16,13 +16,19 @@ var game = new Game(function() {
 
     var controls         = game.controls;
 
-    game.events.new(currentPlayer.name + '.newUnit', 5, true, function() {
+    for(var i = 0; i < 5; i++) {
+        currentPlayer.newUnit(currentPlayer.spawnX + 220, currentPlayer.spawnY);
+        enemyPlayer.newUnit(enemyPlayer.spawnX - 220, enemyPlayer.spawnY);
+    }
+
+
+    game.events.new(currentPlayer.name + '.newUnit', 2, true, function() {
         var playerNotAtMaxUnits = currentPlayer.numberOfUnits() !== currentPlayer.maxUnits;
 
         playerNotAtMaxUnits && currentPlayer.newUnit(currentPlayer.spawnX + 220, currentPlayer.spawnY);
     });
 
-    game.events.new(enemyPlayer.name + '.newUnit', 5, true, function() {
+    game.events.new(enemyPlayer.name + '.newUnit', 2, true, function() {
         var playerNotAtMaxUnits = enemyPlayer.numberOfUnits() !== enemyPlayer.maxUnits;
 
         playerNotAtMaxUnits && enemyPlayer.newUnit(enemyPlayer.spawnX - 220, enemyPlayer.spawnY);
@@ -35,8 +41,6 @@ var game = new Game(function() {
 
         mouse.upX      = event.clientX;
         mouse.upY      = event.clientY;
-        
-        mouse.drag && mouse.selection.check(currentPlayer.units);
 
         leftClick && mouse.leftClick(currentPlayer.units, function() {
             currentPlayer.deselectAllUnits();
@@ -45,17 +49,20 @@ var game = new Game(function() {
         rightClick && mouse.rightClick(game.currentPlayer.findEnemyPlayerItems(), function(target, isColliding) {
             var noTarget = target === false;
 
-            noTarget && currentPlayer.moveItems(event.clientX, event.clientY);
+            noTarget && currentPlayer.moveItems(mouse.upX, mouse.upY);
             (target && isColliding) && currentPlayer.attackItem(target);
 
-            game.particles.new(1, game.foreground, game.particles.drawRectangle, {
-                'x': event.ClientX,
-                'y': event.ClientY,
+            var color = isColliding ? 'rgba(255, 50, 50, 0.5)' : 'rgba(50, 255, 50, 0.5)';
+
+            game.particles.new(0.2, game.foreground, game.particles.drawCircle, {
+                'x': mouse.upX,
+                'y': mouse.upY,
                 'width': 20,
                 'height': 20,
-                'color': 'rgba(255, 255, 255, 1)',
+                'color': color,
                 'lineColor': 'rgba(0, 0, 0, 0)',
-                'lineWidth': 0
+                'lineWidth': 0,
+                'center': true
             });
         });
 
