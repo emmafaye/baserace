@@ -11,7 +11,7 @@ function Animations() {
     this.state.move = function(key, queue) {
         var item   = queue.item;
         var target = queue.target;
-
+        
         item.move(key, item, target);
     };
 
@@ -36,8 +36,12 @@ function Animations() {
                 'center': true
             });
         } else {
-            item.move(key, item, target);
+            item.move(key, target);
         }
+
+    };
+
+    this.state.guard = function(key, queue) {
 
     };
 

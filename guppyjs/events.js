@@ -11,7 +11,6 @@ function Events() {
             'repeat': repeat,
             'functionToExecute': functionToExecute
         };
-        console.log(this.queue);
     };
 
     this.remove = function(key) {

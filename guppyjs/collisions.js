@@ -37,4 +37,25 @@ function Collisions() {
                itemTwo.x < (item.x + item.width) &&
                itemTwo.y < (item.y + item.height);
     };
+
+    this.inProximity = function(item, enemyUnits) {
+        var result        = false;
+        var unitProximity = {
+            'x': item.x - item.lineOfSight / 2,
+            'y': item.y - item.lineOfSight / 2,
+            'width': item.width + item.lineOfSight,
+            'height': item.height + item.lineOfSight
+        };
+
+        for(var key in enemyUnits) {
+            var enemyUnit   = enemyUnits[key];
+            var inProximity = game.collisions.isColliding(unitProximity, enemyUnit);
+
+            if(inProximity) {
+                result = enemyUnit;
+                break;
+            }
+        }
+        return result;
+    };
 }

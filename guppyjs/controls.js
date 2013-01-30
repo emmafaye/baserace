@@ -1,26 +1,27 @@
 function Controls() {
-    this.type              = [];
-    this.type.keyup        = 'keyup';
-    this.type.keydown      = 'keydown';
-    this.type.keypress     = 'keypress';
+    this.type             = [];
+    this.type.keyup       = 'keyup';
+    this.type.keydown     = 'keydown';
+    this.type.keypress    = 'keypress';
 
-    this.type.click        = 'click';
-    this.type.dblclick     = 'dblclick';
-    this.type.mouseup      = 'mouseup';
-    this.type.mousedown    = 'mousedown';
-    this.type.mousemove    = 'mousemove';
-    this.type.mouseout     = 'mouseout';
+    this.type.click       = 'click';
+    this.type.dblclick    = 'dblclick';
+    this.type.mouseup     = 'mouseup';
+    this.type.mousedown   = 'mousedown';
+    this.type.mousemove   = 'mousemove';
+    this.type.mouseout    = 'mouseout';
 
-    this.type.touchstart   = 'touchstart';
-    this.type.touchend     = 'touchend';
-    this.type.touchmove    = 'touchmove';
-    this.type.touchenter   = 'touchenter';
-    this.type.touchleave   = 'touchleave';
-    this.type.touchcancel  = 'touchcancel';
+    this.type.touchstart  = 'touchstart';
+    this.type.touchend    = 'touchend';
+    this.type.touchmove   = 'touchmove';
+    this.type.touchenter  = 'touchenter';
+    this.type.touchleave  = 'touchleave';
+    this.type.touchcancel = 'touchcancel';
 
-    this.events            = [];
+    this.events           = [];
 
-    this.mouse             = new Mouse();
+    this.mouse            = new Mouse();
+    this.keyboard         = new Keyboard();
 
     this.init = function() {
         for(var type in this.type) {
@@ -30,8 +31,11 @@ function Controls() {
 
     // Add new function to be recorded and executed when event is fired.
     this.new = function(type, functionToExecute) {
-        !this.events[type] && (this.events[type] = []);
-        this.events[type].push(functionToExecute);
+        //TODO: refactor to not use push.
+        this.events[type] === undefined && (this.events[type] = []);
+        this.events[type].push(function(event) {
+            functionToExecute(event);
+        });
     };
 
     // Executes the functions assiocated with our event.
@@ -41,7 +45,7 @@ function Controls() {
         if(firedEvent) {
             for(var i = 0; i < firedEvent.length; i++) {
                 // if our function to execute is defined then execute that function for this event.
-                firedEvent[i] && firedEvent[i]();
+                firedEvent[i] && firedEvent[i](event);
             }
         }
     };
@@ -68,46 +72,12 @@ function Mouse() {
     this.code.rightButton = 2;
 
     this.selection        = new MouseSelection();
-
-    this.leftClick = function(items, onClicked) {
-        var clickedItems = [];
-
-        for(var key in items) {
-            var item    = items[key];
-            var clicked = game.collisions.isColliding(this, item);
-
-            if(clicked) {
-                onClicked();
-                item.select();
-
-                clicked && clickedItems.push(item);
-                break;
-            }
-
-        }
-
-        // TODO: Figure out a good way to pull this out of this generic function.
-        // Deselect all units for the current player.
-        clickedItems < 1 && game.currentPlayer.deselectAllUnits();
-        this.drag && this.selection.check(game.currentPlayer.units);
-    };
-
-    this.rightClick = function(items, onClicked) {
-        var item;
-        var isColliding;
-        for(var key in items) {
-            item = items[key];
-            isColliding = game.collisions.isColliding(this, item)
-
-            if(isColliding) { break; } else { item = false; }
-        }
-
-        onClicked(item, isColliding);
-    };
 }
 
 function Keyboard() {
-    this.code = [];
+    this.code   = [];
+    this.code.a = 65;
+    this.code.s = 83;
 }
 
 function MouseSelection() {

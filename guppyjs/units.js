@@ -23,6 +23,7 @@ function Unit(player) {
 
     // Displays whether the unit is selected or not.
     this.selected       = false;
+    this.attackOnSight  = false;
 
     this.attack = function(key, item) {
         var animations = game.animations;
@@ -36,31 +37,50 @@ function Unit(player) {
         }
     };
 
-    this.idle = function() {
-        player.inProximityOfEnemy(this);
+    this.autoAttack = function(moveToPlayer) {
+        var enemyUnits  = player.findEnemyPlayerItems();
+        var enemyUnit   = game.collisions.inProximity(this, enemyUnits);
+        var isColliding = game.collisions.isColliding(this, enemyUnit);
+
+        isColliding === true && this.attack(this.name, enemyUnit);
+        (isColliding === false && moveToPlayer) && this.move(this.name, this, enemyUnit);
     };
 
-    this.move = function(key, item, queue) {
-        // Determines whether the destination position is a positive or negative number.
-        var xIsPositive         = (queue.x - item.x) > 1 + item.speed || (queue.x - item.x) > -1 - item.speed;
-        var yIsPositive         = (queue.y - item.y) > 1 + item.speed || (queue.y - item.y) > -1 - item.speed;
+    this.guard = function() {
+        this.autoAttack(false);
+    };
 
-        var xReachedDestination = xIsPositive ? item.x > queue.x : item.x < queue.x;
-        var yReachedDestination = yIsPositive ? item.y > queue.y : item.y < queue.y;
+    this.idle = function() {
+        this.autoAttack(true);
+    };
+
+    this.move = function(key, destination) {
+        // Determines whether the destination position is a positive or negative number.
+        var xIsPositive         = (destination.x - this.x) > 1 + this.speed || (destination.x - this.x) > -1 - this.speed;
+        var yIsPositive         = (destination.y - this.y) > 1 + this.speed || (destination.y - this.y) > -1 - this.speed;
+
+        var xReachedDestination = xIsPositive ? this.x > destination.x : this.x < destination.x;
+        var yReachedDestination = yIsPositive ? this.y > destination.y : this.y < destination.y;
 
         // Returns the collision based on the destination location.
-        var collision           = game.collisions.hasCollision(item);
+        var collision           = game.collisions.hasCollision(this);
 
         // We increment or decrement based on the destination x position and the current position.
-        var xIncrementPosition  = xIsPositive ? item.speed : -1 * item.speed; //|| (xIsPositive === false && collision)
-        var yIncrementPosition  = yIsPositive ? item.speed : -1 * item.speed; //|| (yIsPositive === false && collision)
+        var xIncrementPosition  = xIsPositive ? this.speed : -1 * this.speed; //|| (xIsPositive === false && collision)
+        var yIncrementPosition  = yIsPositive ? this.speed : -1 * this.speed; //|| (yIsPositive === false && collision)
 
         //TODO: We need to determine if +x or -x has collisions.
-        (xReachedDestination === false) && (item.x += xIncrementPosition);
-        (yReachedDestination === false) && (item.y += yIncrementPosition);
+        (xReachedDestination === false) && (this.x += xIncrementPosition);
+        (yReachedDestination === false) && (this.y += yIncrementPosition);
 
         // Has reached it's destination, idle animation.
         (xReachedDestination && yReachedDestination) && game.animations.changeState(key, game.animations.state.idle);
+
+        player.findCollisonFreePath(this, destination);
+
+        // TODO: Rename inProximityOfEnemy to autoAttack, move outside of AI.
+        // TODO: Make unit stop in place and "reach" it's destination so that it can begin attacking.
+        player.moveAndAttack && this.autoAttack(false);
     };
 
     this.perish = function() {

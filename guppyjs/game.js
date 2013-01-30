@@ -14,11 +14,12 @@ function Game(setup) {
 
     this.start = function() {
         this.foreground.width  = window.innerWidth;
-    	this.foreground.height = window.innerHeight;
+        this.foreground.height = window.innerHeight;
 
         this.background.width  = window.innerWidth;
         this.background.height = window.innerHeight;
 
+        this.gui               = new GUI();
         this.animations        = new Animations();
         this.controls          = new Controls();
         this.collisions        = new Collisions();
@@ -38,6 +39,7 @@ function Game(setup) {
             game.events.process();
             game.particles.process();
             game.performance.calculate();
+            game.gui.process();
         }, 1000 / this.FPS);
     };
 
@@ -80,5 +82,37 @@ function Game(setup) {
 
     this.randomColor = function() {
         return Math.floor(Math.random() * 256);
+    };
+
+    this.victory = function() {
+        this.gui.new('victoryModal', game.gui.modal, {
+            'color': 'rgba(0, 0, 0, 0.5)'
+        });
+
+        this.gui.new('victoryText', game.gui.text, {
+            'x': this.foreground.width / 2 - 360,
+            'y': this.foreground.height / 2 - 40,
+            'size': 80,
+            'font': 'Tahoma',
+            'color': 'rgba(255, 255, 255, 1)',
+            'text': 'You are Victorious!'
+        });
+        game.events.remove('CheckVictory');
+    };
+
+    this.defeat = function() {
+        this.gui.new('defeatModal', game.gui.modal, {
+            'color': 'rgba(0, 0, 0, 0.5)'
+        });
+
+        this.gui.new('defeatText', game.gui.text, {
+            'x': this.foreground.width / 2 - 260,
+            'y': this.foreground.height / 2 - 40,
+            'size': 80,
+            'font': 'Tahoma',
+            'color': 'rgba(255, 255, 255, 1)',
+            'text': 'You Lost!'
+        });
+        game.events.remove('CheckVictory');
     };
 }

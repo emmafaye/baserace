@@ -9,7 +9,7 @@ function Player() {
 
     this.spawnX             = 0;
     this.spawnY             = 0;
-    
+
     this.uid                = 0;
 
     this.newStructure = function(x, y) {
@@ -21,8 +21,7 @@ function Player() {
         game.animations.new(structure, structure, game.animations.state.idle);
         game.collisions.new(structure);
 
-        this.structures.push(structure);
-        this.numberOfStructures++;
+        this.structures[structure.name] = structure;
 
         return structure;
     };
@@ -48,7 +47,7 @@ function Player() {
 
         return unit;
     };
-    
+
     this.killUnit = function(key) {
         var unitExists = this.units[key] !== undefined;
 
@@ -78,7 +77,15 @@ function Player() {
         }
     };
 
-    this.moveItems = function(x, y) {
+    this.attackItem = function(target, allUnits) {
+        for(var key in this.units) {
+            var unit = this.units[key];
+
+            (unit.selected || allUnits) && game.animations.new(unit, target, game.animations.state.attack);
+        }
+    };
+
+    this.moveItems = function(x, y, allUnits) {
         for(var key in this.units) {
             var unit = this.units[key];
             var target = {
@@ -86,28 +93,34 @@ function Player() {
                 'y': y - unit.height / 2
             };
 
-            unit.selected && game.animations.new(unit, target, game.animations.state.move);
+            (unit.selected || allUnits) && game.animations.new(unit, target, game.animations.state.move);
         }
     };
 
 
-    this.attackItem = function(target) {
+    this.guardItems = function(allUnits) {
         for(var key in this.units) {
             var unit = this.units[key];
 
-            unit.selected && game.animations.new(unit, target, game.animations.state.attack);
+            (unit.selected || allUnits) && game.animations.changeState(key, game.animations.state.guard);
+        }
+    };
+
+    this.toggleAttackOnSight = function(boolean, allUnits) {
+        for(var key in this.units) {
+            this.units[key].selected || allUnits && (this.units[key].attackOnSight = boolean);
         }
     };
 
     this.findEnemyPlayerItems = function() {
         var items = [];
 
-        game.doForEveryEnemyPlayer(this, function(player) {
-            for(var key in player.units) {
-                items.push(player.units[key]);
+        game.doForEveryEnemyPlayer(this, function(enemyPlayer) {
+            for(var key in enemyPlayer.units) {
+                items.push(enemyPlayer.units[key]);
             }
-            for(var key in player.structures) {
-                items.push(player.structures[key]);
+            for(var key in enemyPlayer.structures) {
+                items.push(enemyPlayer.structures[key]);
             }
         });
 
@@ -115,11 +128,11 @@ function Player() {
     };
 
     this.numberOfUnits = function() {
-        return Object.keys(this.units).length;
+        return this.getNumberOfItems(this.units);
     };
 
     this.numberOfStructures = function() {
-        return Object.keys(this.structures).length;
+        return this.getNumberOfItems(this.structures);
     };
 
     this.getNumberOfItems = function(items) {
@@ -136,32 +149,13 @@ Player.prototype = new Ai();
 function Ai() {
     this.isComputerControlled = false;
 
-    this.inProximityOfEnemy = function(unit) {
-        var unitProximity   = {
-            'x': unit.x - unit.lineOfSight / 2,
-            'y': unit.y - unit.lineOfSight / 2,
-            'width': unit.width + unit.lineOfSight,
-            'height': unit.height + unit.lineOfSight
-        };
-
-        game.doForEveryEnemyPlayer(this, function(player) {
-            var enemyUnits = player.units;
-
-            for(var key in enemyUnits) {
-                var enemyUnit   = enemyUnits[key];
-                var inProximity = game.collisions.isColliding(unitProximity, enemyUnit);
-
-                if(inProximity) {
-                    var isColliding = game.collisions.isColliding(unit, enemyUnit);
-
-                    isColliding === true && unit.attack(key, enemyUnit);
-                    isColliding === false && unit.move(key, unit, enemyUnit);
-
-                    break;
-                }
-            }
-
-        });
+    // Find path for unit based on checking if collisions occur and if collisions
+    // occur change direction until collisions no longer occur. Possibly try using
+    // a Try and Catch statement.
+    
+    // Try to reach destination as much as possible.
+    this.findCollisonFreePath = function(item, destination) {
+        
     };
 }
 
