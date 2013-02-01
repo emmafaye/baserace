@@ -11,33 +11,31 @@ function Animations() {
     this.state.move = function(key, queue) {
         var item   = queue.item;
         var target = queue.target;
-        
-        item.move(key, item, target);
+
+        item.move(target);
     };
 
     this.state.attack = function(key, queue) {
-        var item        = queue.item;
-        var target      = queue.target;
-        var isColliding = game.collisions.isColliding(item, target);
+        var item            = queue.item;
+        var itemAttackRange = {
+            'x': item.x - item.range / 2,
+            'y': item.y - item.range / 2,
+            'width': item.width + item.range,
+            'height': item.height + item.range
+        };
+
+        var target          = queue.target;
+        var isColliding     = game.collisions.isColliding(itemAttackRange, target);
 
         if(isColliding) {
-//            game.events.new(item.name + '.attacking', 1, true, function() {
-                item.attack(key, target);
-//            });
-
-            game.particles.new(0.2, game.foreground, game.particles.drawCircle, {
-                'x': target.x,
-                'y': target.y,
-                'width': 10,
-                'height': 10,
-                'color': 'rgba(255, 50, 50, 0.5)',
-                'lineColor': 'rgba(0, 0, 0, 0)',
-                'lineWidth': 0,
-                'center': true
-            });
+            item.attack(target);
         } else {
-            item.move(key, target);
+            item.move(target);
         }
+
+    };
+
+    this.state.attackIdle = function(key, queue) {
 
     };
 

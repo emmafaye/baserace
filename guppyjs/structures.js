@@ -3,8 +3,8 @@ function Structure(player) {
     
     this.name      = this.player.name + 'Structure' + this.player.getUniqueId();
     this.color     = this.player.color;
-    this.health    = 1000;
-    this.maxHealth = 1000;
+    this.health    = 500;
+    this.maxHealth = 500;
     this.defense   = 10;
     
     // Position and Dimensions

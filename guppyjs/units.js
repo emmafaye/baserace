@@ -6,10 +6,11 @@ function Unit(player) {
     this.color          = this.player.color;
     this.health         = 70;
     this.maxHealth      = 70;
-    this.stength        = 15;
+    this.stength        = 25;
     this.defense        = 3;
     this.speed          = 1.5;
-    this.lineOfSight    = 100;
+    this.range          = 20;
+    this.lineOfSight    = 150;
 
     // Position and Dimensions
     this.x              = 0;
@@ -25,25 +26,47 @@ function Unit(player) {
     this.selected       = false;
     this.attackOnSight  = false;
 
-    this.attack = function(key, item) {
-        var animations = game.animations;
+    this.attack = function(target) {
+        var item = this;
 
-        item.health -= this.stength / item.defense;
-        if(item.health < 0) {
+        game.animations.changeState(this.name, game.animations.state.attackIdle);
+        
+        game.events.new(this.name + '.attacking', 0.5, true, function() {
+            game.animations.new(item, target, game.animations.state.attack);
+        });
+
+        game.particles.new(0.2, game.foreground, game.particles.drawCircle, {
+            'x': target.x + target.width / 2,
+            'y': target.y + target.height / 2,
+            'radius': target.width / 2.5,
+            'color': { 'r': 255, 'g': 50, 'b': 50, 'a': 0.3 },
+            'lineColor': { 'r': 0, 'g': 0, 'b': 0, 'a': 0 },
+            'lineWidth': 0,
+            'shadowX': 0,
+            'shadowY': 0,
+            'shadowColor': { 'r': 255, 'g': 0, 'b': 0, 'a': 0.5 },
+            'shadowBlur': 10
+        });
+
+        target.health -= this.stength / target.defense;
+        if(target.health < 0) {
+            game.animations.changeState(this.name, game.animations.state.idle);
             game.events.remove(this.name + '.attacking');
-
-            animations.changeState(key, animations.state.idle);
-            item.perish();
+            
+            target.perish();
         }
+
     };
 
-    this.autoAttack = function(moveToPlayer) {
-        var enemyUnits  = player.findEnemyPlayerItems();
-        var enemyUnit   = game.collisions.inProximity(this, enemyUnits);
-        var isColliding = game.collisions.isColliding(this, enemyUnit);
+    this.attackIdle = function() {
 
-        isColliding === true && this.attack(this.name, enemyUnit);
-        (isColliding === false && moveToPlayer) && this.move(this.name, this, enemyUnit);
+    };
+
+    this.autoAttack = function() {
+        var collisions  = game.collisions;
+        var inProximity = collisions.inProximity(this, player.findEnemyPlayerItems());
+
+        inProximity && game.animations.new(this, inProximity, game.animations.state.attack);
     };
 
     this.guard = function() {
@@ -52,35 +75,15 @@ function Unit(player) {
 
     this.idle = function() {
         this.autoAttack(true);
+        this.attackOnSight = false;
     };
 
-    this.move = function(key, destination) {
-        // Determines whether the destination position is a positive or negative number.
-        var xIsPositive         = (destination.x - this.x) > 1 + this.speed || (destination.x - this.x) > -1 - this.speed;
-        var yIsPositive         = (destination.y - this.y) > 1 + this.speed || (destination.y - this.y) > -1 - this.speed;
+    this.move = function(destination) {
+        var reachedDestination = player.findCollisonFreePath(this, destination);
+        var inProximity        = this.attackOnSight && game.collisions.inProximity(this, player.findEnemyPlayerItems()) !== false;
 
-        var xReachedDestination = xIsPositive ? this.x > destination.x : this.x < destination.x;
-        var yReachedDestination = yIsPositive ? this.y > destination.y : this.y < destination.y;
-
-        // Returns the collision based on the destination location.
-        var collision           = game.collisions.hasCollision(this);
-
-        // We increment or decrement based on the destination x position and the current position.
-        var xIncrementPosition  = xIsPositive ? this.speed : -1 * this.speed; //|| (xIsPositive === false && collision)
-        var yIncrementPosition  = yIsPositive ? this.speed : -1 * this.speed; //|| (yIsPositive === false && collision)
-
-        //TODO: We need to determine if +x or -x has collisions.
-        (xReachedDestination === false) && (this.x += xIncrementPosition);
-        (yReachedDestination === false) && (this.y += yIncrementPosition);
-
-        // Has reached it's destination, idle animation.
-        (xReachedDestination && yReachedDestination) && game.animations.changeState(key, game.animations.state.idle);
-
-        player.findCollisonFreePath(this, destination);
-
-        // TODO: Rename inProximityOfEnemy to autoAttack, move outside of AI.
-        // TODO: Make unit stop in place and "reach" it's destination so that it can begin attacking.
-        player.moveAndAttack && this.autoAttack(false);
+        reachedDestination && (this.attackOnSight = false);
+        (reachedDestination || inProximity) && game.animations.changeState(this.name, game.animations.state.idle);
     };
 
     this.perish = function() {
@@ -129,6 +132,11 @@ function Unit(player) {
         game.background.context.fillRect(this.x - this.lineOfSight / 2, this.y - this.lineOfSight / 2, this.width + this.lineOfSight, this.height + this.lineOfSight);
     };
 
+    this.drawAttackRange = function() {
+        game.background.context.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        game.background.context.fillRect(this.x - this.range / 2, this.y - this.range / 2, this.width + this.range, this.height + this.range);
+    };
+
     this.render = function() {
         game.foreground.context.fillStyle = this.color;
         game.foreground.context.fillRect(this.x, this.y, this.width, this.height);
@@ -139,6 +147,7 @@ function Unit(player) {
 
         this.drawHealthBar();
         this.drawLineOfSight();
+        this.drawAttackRange();
         //this.drawLight();
         this.selected && this.drawSelectionOutline();
     };

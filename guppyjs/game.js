@@ -4,13 +4,12 @@ function Game(setup) {
     this.foreground.context = this.foreground.getContext('2d');
     this.background.context = this.background.getContext('2d');
 
+    this.currentPlayer;
     this.players            = [];
 
     // Configuration
     this.FPS                = 100;
-    this.showFPS            = true;
-
-    this.currentPlayer;
+    this.showFPS            = false;
 
     this.start = function() {
         this.foreground.width  = window.innerWidth;
@@ -20,6 +19,7 @@ function Game(setup) {
         this.background.height = window.innerHeight;
 
         this.gui               = new GUI();
+        this.sprites           = new Sprites();
         this.animations        = new Animations();
         this.controls          = new Controls();
         this.collisions        = new Collisions();

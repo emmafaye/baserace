@@ -49,7 +49,7 @@ function Collisions() {
 
         for(var key in enemyUnits) {
             var enemyUnit   = enemyUnits[key];
-            var inProximity = game.collisions.isColliding(unitProximity, enemyUnit);
+            var inProximity = this.isColliding(unitProximity, enemyUnit);
 
             if(inProximity) {
                 result = enemyUnit;

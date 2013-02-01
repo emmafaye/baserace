@@ -16,6 +16,13 @@ function Events() {
     this.remove = function(key) {
         delete this.queue[key];
     };
+    
+    this.removeAll = function(name) {
+        for(var key in this.queue) {
+            var nameExists = key.indexOf(name) > -1;
+            nameExists && delete this.queue[key];  
+        }
+    };
 
     this.process = function() {
         this.time = new Date().getTime();

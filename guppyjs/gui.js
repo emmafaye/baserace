@@ -16,7 +16,10 @@ function GUI() {
         game.foreground.context.fillStyle = style.color;
         game.foreground.context.fillRect(0, 0, game.foreground.width, game.foreground.height);
     };
-
+    
+    this.image = function(style) {
+        game.foreground.context.drawImage(style.image, style.x, style.y, style.width, style.height);
+    };
 
     this.text = function(style) {
         game.foreground.context.font      = style.size +'px ' + style.font;

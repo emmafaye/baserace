@@ -29,12 +29,30 @@ var game = new Game(function() {
     var enemyBase        = enemyPlayer.newStructure(enemyPlayer.spawnX, enemyPlayer.spawnY);
 
     // -----------------------------------------------------------------------//
-    // Spawning for units
+    // Intro
     // -----------------------------------------------------------------------//
-    for(var i = 0; i < 5; i++) {
-        currentPlayer.newUnit(currentPlayer.spawnX + 220, currentPlayer.spawnY);
-        enemyPlayer.newUnit(enemyPlayer.spawnX - 220, enemyPlayer.spawnY);
-    }
+    var introImage = game.sprites.load('logo.png');
+    game.gui.new('Intro', game.gui.image, {
+        'x': 0,
+        'y': 0,
+        'width': game.foreground.width,
+        'height': game.foreground.height,
+        'image': introImage
+    });
+    events.new('startGame', 2, false, function() {
+        game.gui.remove('Intro');
+        game.events.remove('removeIntro');
+
+        for(var i = 0; i < 14; i++) {
+            currentPlayer.newUnit(currentPlayer.spawnX + 220, currentPlayer.spawnY);
+            enemyPlayer.newUnit(enemyPlayer.spawnX - 220, enemyPlayer.spawnY);
+        }
+
+        events.new('AttackUserPathing', 2, true, function() {
+            enemyPlayer.toggleAttackOnSight(true, true);
+            enemyPlayer.moveItems(playerBase.x + playerBase.width / 2, playerBase.y + playerBase.height / 2, true);
+        });
+    });
 
     events.new(currentPlayer.name + '.newUnit', 2, true, function() {
         var playerNotAtMaxUnits = currentPlayer.numberOfUnits() !== currentPlayer.maxUnits;
@@ -49,24 +67,22 @@ var game = new Game(function() {
     });
 
     // -----------------------------------------------------------------------//
-    // Game victory conditions
+    // Game victory Condition Event
     // -----------------------------------------------------------------------//
     events.new('CheckVictory', 1, true, function() {
         (currentPlayer.numberOfStructures() === 0) && game.defeat();
         (enemyPlayer.numberOfStructures() === 0) && game.victory();
-    });
 
-    // -----------------------------------------------------------------------//
-    // Ai Pathing
-    // -----------------------------------------------------------------------//
-    events.new('AIPathing', 5, true, function() {
-        enemyPlayer.moveAndAttack = true;
-        enemyPlayer.moveItems(playerBase.x + playerBase.width / 2, playerBase.y + playerBase.height / 2, true);
+        (currentPlayer.numberOfStructures() === 0 || enemyPlayer.numberOfStructures() === 0) && events.new('refreshPage', 3, false, function() {
+            location.reload();
+        });
     });
 
     // -----------------------------------------------------------------------//
     // Controls
     // -----------------------------------------------------------------------//
+    controls.moveAndAtttackKeyPressed = false;
+
     controls.new(controls.type.mouseup, function(event) {
         var type  = event.button;
 
@@ -75,9 +91,9 @@ var game = new Game(function() {
 
         controls.mouse[type]();
 
-        mouse.clicked               = false;
-        mouse.drag                  = false;
-        currentPlayer.moveAndAttack = false;
+        mouse.clicked                     = false;
+        mouse.drag                        = false;
+        controls.moveAndAtttackKeyPressed = false;
     });
 
     controls.mouse[mouse.code.leftButton] = function() {
@@ -121,15 +137,32 @@ var game = new Game(function() {
         noTarget && currentPlayer.moveItems(mouse.upX, mouse.upY, false);
         (target && isColliding) && currentPlayer.attackItem(target, false);
 
-        var moveAndAttack = currentPlayer.moveAndAttack;
-        var color         = (isColliding || moveAndAttack) ? 'rgba(255, 50, 50, 0.5)' : 'rgba(50, 255, 50, 0.5)';
-        particles.new(0.2, game.foreground, particles.drawCircle, {
+        controls.moveAndAtttackKeyPressed && currentPlayer.toggleAttackOnSight(true, false);
+
+        var color = (isColliding || controls.moveAndAtttackKeyPressed) ? { 'r': 255, 'g': 50, 'b': 50, 'a': 0.5 } : { 'r': 50, 'g': 255, 'b': 50, 'a': 0.5 };
+        particles.new(0.3, game.foreground, particles.drawCircle, {
             'x': mouse.upX,
             'y': mouse.upY,
-            'width': 20,
-            'height': 20,
+            'radius': 20,
             'color': color,
-            'lineColor': 'rgba(0, 0, 0, 0)',
+            'lineColor': { 'r': 0, 'g': 0, 'b': 0, 'a': 0 },
+            'lineWidth': 0,
+            'center': true
+        }, {
+            'x': mouse.upX,
+            'y': mouse.upY,
+            'radius': 10,
+            'color': color,
+            'lineColor': { 'r': 0, 'g': 0, 'b': 0, 'a': 0.5 },
+            'lineWidth': 20,
+            'center': true
+        });
+        particles.new(0.1, game.foreground, particles.drawCircle, {
+            'x': mouse.upX,
+            'y': mouse.upY,
+            'radius': 25,
+            'color': { 'r': 255, 'g': 255, 'b': 255, 'a': 0.5 },
+            'lineColor': { 'r': 0, 'g': 0, 'b': 0, 'a': 0 },
             'lineWidth': 0,
             'center': true
         });
@@ -163,8 +196,7 @@ var game = new Game(function() {
 
         switch(type) {
             case keyboard.code.a:
-                currentPlayer.toggleAttackOnSight(true);
-                game.currentPlayer.moveAndAttack = true;
+                controls.moveAndAtttackKeyPressed = true;
                 break;
             case keyboard.code.s:
                 currentPlayer.guardItems();
